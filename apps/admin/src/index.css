@@ -1,0 +1,52 @@
+@import 'tailwindcss';
+
+/* Design tokens — docs/design/08-design-system.md */
+@theme {
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: ui-monospace, 'JetBrains Mono', 'SFMono-Regular', Menlo, monospace;
+
+  --color-bg: #ffffff;
+  --color-bg-subtle: #f6f7f9;
+  --color-dark: #0a0d14;
+  --color-dark-elevated: #121722;
+  --color-fg: #0a0d14;
+  --color-fg-muted: #5b6474;
+  --color-border: #e4e7ec;
+  --color-primary: #1d3fd8;
+  --color-primary-hover: #1633b3;
+  --color-primary-soft: #eef2ff;
+  --color-accent: #22b8e6;
+  --color-success: #12a150;
+  --color-success-soft: #e8f7ee;
+  --color-warning: #d98b00;
+  --color-warning-soft: #fdf4e3;
+  --color-danger: #d92d20;
+  --color-danger-soft: #fdecea;
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 12px;
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    font-feature-settings: 'cv11', 'ss01';
+  }
+
+  body {
+    @apply bg-bg-subtle text-fg text-sm;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}

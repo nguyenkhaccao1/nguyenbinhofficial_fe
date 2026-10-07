@@ -1,0 +1,19 @@
+{
+  "name": "nguyenbinhofficial-fe",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev:admin": "npm run dev -w @nb/admin",
+    "dev:web": "npm run dev -w @nb/web",
+    "build": "npm run build -w @nb/admin && npm run build -w @nb/web",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
