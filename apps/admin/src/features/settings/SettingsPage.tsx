@@ -212,7 +212,8 @@ function GroupForm({ group, initial }: { group: GroupDef; initial: Record<string
               <Field key={f.name} label={f.label} error={error} hint={f.hint} className={className}>
                 {() => (
                   <Controller control={control} name={f.name} render={({ field }) => (
-                    <MediaField value={field.value as MediaRef | null} onChange={field.onChange} disabled={!canEdit} />
+                    <MediaField value={field.value as MediaRef | null} onChange={field.onChange} disabled={!canEdit}
+                      folderPath={group.key === 'seo' ? 'Thương hiệu/SEO' : 'Thương hiệu'} />
                   )} />
                 )}
               </Field>

@@ -106,10 +106,11 @@ export function useMediaMutations() {
 
   return {
     upload: useMutation({
-      mutationFn: ({ files, folderId }: { files: File[]; folderId: string | null }) => {
+      mutationFn: ({ files, folderId, folderPath }: { files: File[]; folderId: string | null; folderPath?: string }) => {
         const form = new FormData();
         for (const file of files) form.append('files', file);
         if (folderId) form.append('folderId', folderId);
+        else if (folderPath) form.append('folderPath', folderPath);
         return api<UploadResult[]>('/admin/media/upload', { method: 'POST', body: form });
       },
       onSuccess: invalidate,

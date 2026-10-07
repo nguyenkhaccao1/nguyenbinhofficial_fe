@@ -4,11 +4,14 @@ import { ACCEPTED_EXTENSIONS, useMediaMutations, type MediaItem } from './api';
 
 const MAX_FILES_PER_REQUEST = 50;
 
-/** Upload nhieu file, bao ket qua tung file (backend co the tu choi tung file rieng le). */
+/**
+ * Upload nhieu file, bao ket qua tung file (backend co the tu choi tung file rieng le).
+ * folderPath (vd "Dự án/PerfectKey Workforce") → backend tu tao cay thu muc va dat file vao do.
+ */
 export function useUpload() {
   const { upload } = useMediaMutations();
 
-  const run = async (fileList: FileList | File[], folderId: string | null): Promise<MediaItem[]> => {
+  const run = async (fileList: FileList | File[], folderId: string | null, folderPath?: string): Promise<MediaItem[]> => {
     const files = [...fileList];
     const rejected = files.filter((f) => !ACCEPTED_EXTENSIONS.includes(extension(f.name)));
     const accepted = files.filter((f) => !rejected.includes(f));
@@ -19,7 +22,7 @@ export function useUpload() {
     for (let i = 0; i < accepted.length; i += MAX_FILES_PER_REQUEST) {
       const batch = accepted.slice(i, i + MAX_FILES_PER_REQUEST);
       try {
-        const results = await upload.mutateAsync({ files: batch, folderId });
+        const results = await upload.mutateAsync({ files: batch, folderId, folderPath });
         for (const r of results) {
           if (r.success && r.media) uploaded.push(r.media);
           else toast.error(`${r.fileName}: ${r.error}`);
