@@ -1,4 +1,4 @@
-import { FaqList, ProcessSteps, TechGroups } from '~/components/blocks';
+import { ContactPanel, FaqList, ProcessSteps, TechGroups } from '~/components/blocks';
 import { CardGrid, ProjectCardView, ServiceCardView } from '~/components/cards';
 import { Icon } from '~/components/Icon';
 import { Breadcrumbs } from '~/components/PageHeader';
@@ -6,6 +6,7 @@ import { ButtonLink, Container, cx, Eyebrow, Picture, RichText, Section, Section
 import { cacheHeaders, getService, orNotFound } from '~/lib/api.server';
 import { breadcrumbLd, buildMeta, customSchema, jsonLd, rootData } from '~/lib/seo';
 import type { TechnologyGroupDto } from '@nb/shared';
+import { useSiteSettings } from '~/root';
 import type { Route } from './+types/service';
 
 export async function loader({ params }: Route.LoaderArgs) {
@@ -36,6 +37,7 @@ export const meta: Route.MetaFunction = ({ loaderData, matches }) => {
 
 export default function Service({ loaderData }: Route.ComponentProps) {
   const s = loaderData.service;
+  const settings = useSiteSettings();
   // Gom cong nghe theo nhom de dung lai TechGroups.
   const techGroups = Object.values(s.technologies.reduce<Record<string, TechnologyGroupDto>>((acc, t) => {
     (acc[t.group] ??= { group: t.group, items: [] }).items.push(t);
@@ -53,7 +55,7 @@ export default function Service({ loaderData }: Route.ComponentProps) {
               <h1 className="mt-4 text-4xl leading-[1.1] font-semibold tracking-tight text-balance sm:text-5xl">{s.card.name}</h1>
               {s.card.shortDescription && <p className="mt-5 text-lg leading-relaxed text-white/70 sm:text-xl">{s.card.shortDescription}</p>}
               <div className="mt-9 flex flex-wrap gap-3">
-                <ButtonLink to="/lien-he" variant="light" size="lg" arrow>Trao đổi yêu cầu</ButtonLink>
+                <ButtonLink to={`/lien-he?dich-vu=${s.card.slug}`} variant="light" size="lg" arrow>Trao đổi yêu cầu</ButtonLink>
               </div>
             </div>
             {s.card.cover && (
@@ -122,6 +124,11 @@ export default function Service({ loaderData }: Route.ComponentProps) {
           <CardGrid>{s.otherServices.map((o) => <ServiceCardView key={o.id} service={o} />)}</CardGrid>
         </Section>
       )}
+
+      <Section tone="subtle" id="lien-he">
+        <ContactPanel settings={settings} serviceSlug={s.card.slug} formType="QUOTE"
+          title={`Tư vấn ${s.card.name.toLowerCase()}`} subtitle="Để lại thông tin, đội ngũ Nguyên Bình sẽ liên hệ tư vấn và báo giá miễn phí." />
+      </Section>
     </>
   );
 }

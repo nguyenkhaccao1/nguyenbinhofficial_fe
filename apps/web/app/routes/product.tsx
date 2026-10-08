@@ -1,12 +1,13 @@
 import { Check } from 'lucide-react';
 import { CommercialTypeLabels, ProductTypeLabels } from '@nb/shared';
-import { FaqList, LiteVideo, PricingTable, TestimonialList } from '~/components/blocks';
+import { ContactPanel, FaqList, LiteVideo, PricingTable, TestimonialList } from '~/components/blocks';
 import { CardGrid, ProjectCardView } from '~/components/cards';
 import { Icon } from '~/components/Icon';
 import { Breadcrumbs } from '~/components/PageHeader';
 import { Badge, BrowserFrame, ButtonLink, Container, Picture, PhoneFrame, RichText, Section, SectionHeading } from '~/components/ui';
 import { cacheHeaders, getProduct, orNotFound } from '~/lib/api.server';
 import { breadcrumbLd, buildMeta, customSchema, jsonLd, rootData } from '~/lib/seo';
+import { useSiteSettings } from '~/root';
 import type { Route } from './+types/product';
 
 export async function loader({ params }: Route.LoaderArgs) {
@@ -49,6 +50,7 @@ const textSections = [
 
 export default function Product({ loaderData }: Route.ComponentProps) {
   const p = loaderData.product;
+  const settings = useSiteSettings();
   const card = p.card;
   const demoUrl = `/lien-he?san-pham=${card.slug}`;
   const screens = p.media.filter((m) => m.image && m.kind !== 'MOBILE');
@@ -200,6 +202,11 @@ export default function Product({ loaderData }: Route.ComponentProps) {
           </div>
           <ButtonLink to={demoUrl} variant="light" arrow>Yêu cầu demo</ButtonLink>
         </div>
+      </Section>
+
+      <Section tone="subtle" id="dang-ky-demo">
+        <ContactPanel settings={settings} product={{ name: card.name, slug: card.slug }} title={`Đăng ký demo ${card.name}`}
+          subtitle="Chúng tôi sẽ liên hệ để sắp xếp buổi demo theo đúng quy trình của doanh nghiệp bạn." />
       </Section>
     </>
   );

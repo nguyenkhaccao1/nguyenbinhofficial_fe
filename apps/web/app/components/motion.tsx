@@ -179,7 +179,10 @@ declare global {
 }
 
 /**
- * Script dat trong <head>: gan class "motion" truoc khi trinh duyet ve (tranh nhay noi dung),
- * tru khi nguoi dung chon giam chuyen dong. Neu sau 2.5s GSAP chua chay → go class, hien noi dung.
+ * Script dat trong <head>, chay truoc khi trinh duyet ve:
+ * 1. Tai lai trang (F5) → ve dau trang: xoa vi tri cuon React Router da luu, tat khoi phuc cuon cua trinh duyet;
+ *    Chrome van khoi phuc cuon cu trong luc tai → cuon ve dau them lan nua o DOMContentLoaded va load.
+ * 2. Gan class "motion" (tranh nhay noi dung) tru khi nguoi dung chon giam chuyen dong;
+ *    sau 2.5s GSAP chua chay → go class, hien noi dung.
  */
-export const motionBootScript = `(function(){try{if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;var d=document.documentElement;d.classList.add('motion');setTimeout(function(){if(!window.__nbMotion)d.classList.remove('motion')},2500)}catch(e){}})();`;
+export const motionBootScript = `(function(){try{var n=performance.getEntriesByType('navigation')[0];if(n&&n.type==='reload'){sessionStorage.removeItem('react-router-scroll-positions');if('scrollRestoration' in history)history.scrollRestoration='manual';var top=function(){window.scrollTo(0,0)};top();addEventListener('DOMContentLoaded',top,{once:true});addEventListener('load',function(){top();requestAnimationFrame(top)},{once:true});}}catch(e){}try{if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;var d=document.documentElement;d.classList.add('motion');setTimeout(function(){if(!window.__nbMotion)d.classList.remove('motion')},2500)}catch(e){}})();`;

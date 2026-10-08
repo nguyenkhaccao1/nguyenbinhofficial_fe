@@ -56,6 +56,7 @@ export const getPosts = (query: Record<string, QueryValue>) => apiGet<PagedResul
 export const getBlogCategories = () => apiGet<BlogCategory[]>('/blog/categories');
 export const resolveBlog = (slug: string) => apiGet<BlogResolveResult>(`/blog/resolve/${encodeURIComponent(slug)}`);
 export const search = (q: string) => apiGet<SearchResult>('/search', { q });
+export const getSitemap = () => apiGet<{ path: string; lastModified: string | null; kind: string }[]>('/site/sitemap');
 
 /** Chi index o production that (SITE_INDEXABLE=true); SIT/UAT/dev luon noindex (SEO architecture). */
 export const SITE_INDEXABLE = process.env.SITE_INDEXABLE === 'true';

@@ -1,3 +1,4 @@
+import { LeadsPage } from '@/features/leads/LeadsPage';
 import { FileQuestion } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { createBrowserRouter, Link } from 'react-router';
@@ -71,6 +72,8 @@ export const router = createBrowserRouter(
         { path: 'library/team', element: crud(libraryConfigs['team-members']) },
         { path: 'library/faqs', element: crud(libraryConfigs.faqs) },
 
+        { path: 'leads', element: guard(Permissions.lead.view, <LeadsPage />) },
+        { path: 'leads/:id', element: guard(Permissions.lead.view, <LeadsPage />) },
         { path: 'media', element: guard(Permissions.media.view, <MediaLibraryPage />) },
         { path: 'website/settings', element: guard(Permissions.settings.view, <SettingsPage />) },
         { path: 'system/users', element: guard(Permissions.user.view, <UsersPage />) },

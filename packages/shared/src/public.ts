@@ -283,6 +283,8 @@ export interface PublicPage {
 }
 
 export interface NavMegaItem {
+  /** Ten nhom (vd nhom dich vu) — megamenu chia cot theo nhom. */
+  group?: string | null;
   label: string;
   url: string;
   description: string | null;

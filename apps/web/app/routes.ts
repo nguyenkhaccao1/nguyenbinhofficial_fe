@@ -2,6 +2,9 @@ import { index, layout, route, type RouteConfig } from '@react-router/dev/routes
 
 // Sitemap day du: docs/design/01-sitemap.md (repo backend). Route co dinh truoc, catch-all (Page builder) sau cung.
 export default [
+  // File SEO dang tai nguyen (khong co giao dien, khong qua layout).
+  route('sitemap.xml', 'routes/sitemap.ts'),
+  route('robots.txt', 'routes/robots.ts'),
   layout('routes/site-layout.tsx', [
     index('routes/home.tsx'),
     route('du-an', 'routes/projects.tsx'),
@@ -16,6 +19,8 @@ export default [
     route('blog/:slug', 'routes/blog-slug.tsx'),
     route('search', 'routes/search.tsx'),
     route('lien-he', 'routes/contact.tsx'),
+    route('yeu-cau-bao-gia', 'routes/contact.tsx', { id: 'routes/quote' }),
+    route('yeu-cau-demo', 'routes/contact.tsx', { id: 'routes/demo' }),
     route('*', 'routes/page.tsx'),
   ]),
 ] satisfies RouteConfig;

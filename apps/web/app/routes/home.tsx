@@ -35,6 +35,14 @@ export const meta: Route.MetaFunction = ({ loaderData, matches }) => {
       ...(settings?.brand.logo?.url ? { logo: settings.brand.logo.url } : {}),
       ...(settings?.contact.email ? { email: settings.contact.email } : {}),
       ...(settings?.contact.phone ? { telephone: settings.contact.phone } : {}),
+      ...((settings?.contact.hotline ?? settings?.contact.phone)
+        ? {
+          contactPoint: [{
+            '@type': 'ContactPoint', telephone: settings?.contact.hotline ?? settings?.contact.phone, contactType: 'customer service',
+            areaServed: 'VN', availableLanguage: ['vi'], ...(settings?.contact.email ? { email: settings.contact.email } : {}),
+          }],
+        }
+        : {}),
       sameAs: Object.values(settings?.social ?? {}).filter(Boolean),
     }),
     jsonLd({ '@context': 'https://schema.org', '@type': 'WebSite', name: settings?.brand.siteName, url: `${siteUrl}/`,

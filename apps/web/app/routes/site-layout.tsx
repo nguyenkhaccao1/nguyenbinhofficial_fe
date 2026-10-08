@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import { Outlet, useLocation } from 'react-router';
 import { usePageMotion } from '~/components/motion';
+import { FloatingContact } from '~/components/FloatingContact';
 import { SiteFooter } from '~/components/SiteFooter';
 import { SiteHeader } from '~/components/SiteHeader';
 import { getNavigation } from '~/lib/api.server';
@@ -28,6 +29,7 @@ export default function SiteLayout({ loaderData }: Route.ComponentProps) {
         <Outlet />
       </main>
       <SiteFooter settings={settings} navigation={loaderData.navigation} />
+      <FloatingContact settings={settings} />
     </>
   );
 }

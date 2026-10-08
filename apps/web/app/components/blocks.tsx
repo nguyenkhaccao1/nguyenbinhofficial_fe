@@ -6,6 +6,7 @@ import {
   type PublicTestimonial, type ServiceCard, type TechnologyGroupDto,
 } from '@nb/shared';
 import { useSiteSettings } from '~/root';
+import { LeadForm, type LeadFormType } from './LeadForm';
 import {
   CardGrid, IndustryCardView, PostCardView, ProductCardView, ProjectCardView, ProjectHighlight, ProjectRow, ServiceCardView,
 } from './cards';
@@ -631,52 +632,57 @@ const Pricing: Renderer = ({ data, resolved, ctx }) => (
  * Kenh lien he lay tu Settings. Form thu lead day du (luu CRM, chong spam) thuoc Phase 5;
  * hien tai hien kenh lien he truc tiep — khong hien form gia khong gui duoc.
  */
-export function ContactPanel({ settings, title, subtitle, product, as: Tag = 'h2' }: {
-  settings: PublicSettings | null; title?: string; subtitle?: string; product?: NamedLink | null; as?: 'h1' | 'h2';
+/** Trang/khoi lien he: kenh lien he truc tiep (goi, Zalo, email) + form gui yeu cau (luu CRM, gui email thong bao). */
+export function ContactPanel({ settings, title, subtitle, product, serviceSlug, formType = 'CONTACT', as: Tag = 'h2' }: {
+  settings: PublicSettings | null; title?: string; subtitle?: string; product?: NamedLink | null; serviceSlug?: string | null;
+  formType?: LeadFormType; as?: 'h1' | 'h2';
 }) {
   const c = settings?.contact;
   const phone = c?.hotline ?? c?.phone;
-  const subject = product ? `?subject=${encodeURIComponent(`Yêu cầu demo ${product.name}`)}` : '';
   const channels = [
-    phone && { icon: Phone, label: 'Điện thoại', value: phone, href: `tel:${phone.replace(/\s/g, '')}` },
-    c?.email && { icon: Mail, label: 'Email', value: c.email, href: `mailto:${c.email}${subject}` },
-    (c?.zaloUrl || c?.zaloPhone) && { icon: MessageCircle, label: 'Zalo', value: c?.zaloPhone ?? 'Nhắn Zalo', href: c?.zaloUrl ?? `https://zalo.me/${c!.zaloPhone!.replace(/\D/g, '')}` },
+    phone && { icon: Phone, label: 'Gọi ngay', value: phone, href: `tel:${phone.replace(/\s/g, '')}` },
+    (c?.zaloUrl || c?.zaloPhone) && { icon: MessageCircle, label: 'Nhắn Zalo', value: c?.zaloPhone ?? 'Zalo', href: c?.zaloUrl ?? `https://zalo.me/${c!.zaloPhone!.replace(/\D/g, '')}` },
+    c?.email && { icon: Mail, label: 'Email', value: c.email, href: `mailto:${c.email}` },
   ].filter(Boolean) as { icon: typeof Phone; label: string; value: string; href: string }[];
 
   return (
-    <div className="grid gap-10 text-left lg:grid-cols-[5fr_7fr] lg:gap-16">
-      <div>
+    <div className="grid items-start gap-10 text-left lg:grid-cols-[5fr_7fr] lg:gap-16">
+      <div data-anim="heading">
         <Tag className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">{title ?? 'Trao đổi về dự án của bạn'}</Tag>
         <p className="mt-4 text-lg leading-relaxed text-fg-muted [.tone-dark_&]:text-white/65">
           {subtitle ?? 'Mô tả ngắn nhu cầu, quy mô và thời gian dự kiến. Đội ngũ kỹ thuật sẽ phản hồi để làm rõ yêu cầu và đề xuất hướng triển khai.'}
         </p>
+        {channels.length > 0 && (
+          <ul className="mt-8 space-y-3">
+            {channels.map((ch) => (
+              <li key={ch.label}>
+                <a href={ch.href} {...(ch.href.startsWith('http') ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                  className="flex items-center gap-4 rounded-xl border border-border bg-white p-4 transition-colors hover:border-primary/40 [.tone-dark_&]:border-white/10 [.tone-dark_&]:bg-dark-elevated">
+                  <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-primary/8 text-primary [.tone-dark_&]:bg-white/8 [.tone-dark_&]:text-accent">
+                    <ch.icon className="size-5" aria-hidden />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-sm text-fg-muted [.tone-dark_&]:text-white/55">{ch.label}</span>
+                    <span className="block text-lg font-semibold break-all">{ch.value}</span>
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        )}
         {c?.workingHours && <p className="mt-6 text-sm text-fg-muted [.tone-dark_&]:text-white/55">Giờ làm việc: {c.workingHours}</p>}
         {c?.address && <p className="mt-2 text-sm text-fg-muted [.tone-dark_&]:text-white/55">{c.address}</p>}
       </div>
-      {channels.length > 0 && (
-        <ul className="grid gap-4 sm:grid-cols-2">
-          {channels.map((ch) => (
-            <li key={ch.label}>
-              <a href={ch.href} {...(ch.href.startsWith('http') ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-                className="flex h-full items-start gap-4 rounded-xl border border-border bg-white p-6 transition-colors hover:border-primary/40 [.tone-dark_&]:border-white/10 [.tone-dark_&]:bg-dark-elevated">
-                <ch.icon className="mt-0.5 size-5 shrink-0 text-primary [.tone-dark_&]:text-accent" aria-hidden />
-                <span>
-                  <span className="block text-sm text-fg-muted [.tone-dark_&]:text-white/55">{ch.label}</span>
-                  <span className="mt-1 block text-lg font-semibold break-all">{ch.value}</span>
-                </span>
-              </a>
-            </li>
-          ))}
-        </ul>
-      )}
+      <LeadForm formType={product ? 'DEMO' : formType} productSlug={product?.slug} productName={product?.name} serviceSlug={serviceSlug} />
     </div>
   );
 }
 
 const ContactForm: Renderer = ({ data, resolved, ctx }) => {
   const settings = useSiteSettings();
+  const formType = ({ quote: 'QUOTE', demo: 'DEMO' } as Record<string, LeadFormType>)[str(data.formType) ?? ''] ?? 'CONTACT';
   return <ContactPanel settings={settings} title={str(data.title)} subtitle={str(data.subtitle)} product={(resolved as NamedLink | null) ?? null}
-    as={ctx.first ? 'h1' : 'h2'} />;
+    formType={formType} as={ctx.first ? 'h1' : 'h2'} />;
 };
 
 const renderers: Record<string, Renderer> = {

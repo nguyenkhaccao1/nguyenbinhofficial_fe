@@ -1,7 +1,7 @@
 import {
   Boxes, BriefcaseBusiness, Building2, Cpu, FileText, FolderKanban, FolderTree, History, Image, LayoutDashboard,
   Layers, Menu, MessageSquareQuote, Package, PanelsTopLeft, Settings, ShieldCheck, Tags, UserRound, Users,
-  UsersRound, CircleHelp, Handshake, type LucideIcon,
+  UsersRound, CircleHelp, Handshake, Inbox, type LucideIcon,
 } from 'lucide-react';
 import { Permissions } from '@nb/shared';
 
@@ -23,6 +23,10 @@ export interface NavGroup {
  */
 export const navigation: NavGroup[] = [
   { items: [{ label: 'Dashboard', to: '/', icon: LayoutDashboard, permission: Permissions.dashboard.view }] },
+  {
+    label: 'Khách hàng',
+    items: [{ label: 'Yêu cầu khách hàng', to: '/leads', icon: Inbox, permission: Permissions.lead.view }],
+  },
   {
     label: 'Nội dung',
     items: [

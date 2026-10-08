@@ -1,4 +1,4 @@
-import { ChevronDown, Menu, Search, X } from 'lucide-react';
+import { ChevronDown, Menu, Phone, Search, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Form, Link, NavLink, useLocation } from 'react-router';
 import type { Navigation, NavItem, NavMegaItem, PublicSettings } from '@nb/shared';
@@ -23,25 +23,48 @@ function subItems(item: NavItem): NavMegaItem[] {
   return item.children.filter((c) => c.url).map((c) => ({ label: c.label, url: c.url!, description: c.description, icon: null }));
 }
 
+function MegaLink({ m, onNavigate, compact }: { m: NavMegaItem; onNavigate: () => void; compact?: boolean }) {
+  return (
+    <Link to={m.url} prefetch="intent" onClick={onNavigate} className="flex gap-3 rounded-lg px-3 py-2.5 hover:bg-bg-subtle">
+      {m.icon && <Icon name={m.icon} className="mt-0.5 size-[18px] shrink-0 text-primary" />}
+      <span className="min-w-0">
+        <span className="block text-[15px] leading-snug font-medium">{m.label}</span>
+        {m.description && (
+          // Khong dung "block" cung line-clamp (line-clamp can display:-webkit-box).
+          <span className={cx('mt-0.5 text-[13px] leading-snug text-fg-muted', compact ? 'line-clamp-1' : 'line-clamp-2')}>{m.description}</span>
+        )}
+      </span>
+    </Link>
+  );
+}
+
+/**
+ * Megamenu: co dinh theo khung man hinh ngay duoi header (khong tran mep), cao toi da bang man hinh (cuon ben trong).
+ * Muc co nhom (dich vu) → chia cot theo nhom, mo ta 1 dong; khong nhom → luoi 2 cot.
+ */
 function MegaPanel({ item, onNavigate }: { item: NavItem; onNavigate: () => void }) {
   const items = subItems(item);
-  const wide = items.length > 4;
+  const groups = items.some((m) => m.group)
+    ? [...items.reduce((map, m) => map.set(m.group ?? 'Khác', [...(map.get(m.group ?? 'Khác') ?? []), m]), new Map<string, NavMegaItem[]>())]
+    : null;
+  const wide = groups ? groups.length > 1 : items.length > 4;
   return (
-    <div className={cx('absolute top-full left-1/2 z-50 -translate-x-1/2 pt-3', wide ? 'w-[min(760px,90vw)]' : 'w-[380px]')}>
-      <div className="rounded-xl border border-border bg-white p-3 shadow-[0_24px_60px_-20px_rgba(10,13,20,0.25)]">
-        <ul className={cx('grid gap-1', wide && 'sm:grid-cols-2')}>
-          {items.map((m) => (
-            <li key={m.url}>
-              <Link to={m.url} prefetch="intent" onClick={onNavigate} className="flex gap-3 rounded-lg p-3 hover:bg-bg-subtle">
-                {m.icon && <Icon name={m.icon} className="mt-0.5 size-5 shrink-0 text-primary" />}
-                <span>
-                  <span className="block font-medium">{m.label}</span>
-                  {m.description && <span className="mt-0.5 line-clamp-2 block text-sm text-fg-muted">{m.description}</span>}
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
+    <div className={cx('fixed inset-x-0 top-16 z-50 mx-auto px-4', wide ? 'max-w-[1120px]' : 'max-w-[460px]')}>
+      <div className="max-h-[calc(100dvh-5.5rem)] overflow-y-auto overscroll-contain rounded-xl border border-border bg-white p-3 shadow-[0_24px_60px_-20px_rgba(10,13,20,0.25)]">
+        {groups ? (
+          <div className={cx('grid gap-x-4 gap-y-3', groups.length >= 3 ? 'md:grid-cols-3' : groups.length === 2 ? 'md:grid-cols-2' : '')}>
+            {groups.map(([group, links]) => (
+              <section key={group} aria-label={group}>
+                <p className="px-3 pt-2 pb-1 text-xs font-semibold tracking-wider text-fg-muted uppercase">{group}</p>
+                <ul>{links.map((m) => <li key={m.url}><MegaLink m={m} onNavigate={onNavigate} compact /></li>)}</ul>
+              </section>
+            ))}
+          </div>
+        ) : (
+          <ul className={cx('grid gap-1', wide && 'sm:grid-cols-2')}>
+            {items.map((m) => <li key={m.url}><MegaLink m={m} onNavigate={onNavigate} /></li>)}
+          </ul>
+        )}
         {item.url && (
           <Link to={item.url} onClick={onNavigate} className="mt-2 block rounded-lg bg-bg-subtle px-3 py-2.5 text-sm font-medium text-primary hover:underline">
             Xem tất cả {item.label.toLowerCase()}
@@ -59,6 +82,7 @@ export function SiteHeader({ settings, navigation }: { settings: PublicSettings 
   const [drawer, setDrawer] = useState(false);
   const [expanded, setExpanded] = useState<string | null>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const headerRef = useRef<HTMLElement>(null);
   const location = useLocation();
 
   // Dong menu khi chuyen trang.
@@ -83,14 +107,26 @@ export function SiteHeader({ settings, navigation }: { settings: PublicSettings 
     setOpen(label);
   };
   const leave = () => {
-    closeTimer.current = setTimeout(() => setOpen(null), 120);
+    closeTimer.current = setTimeout(() => setOpen(null), 200);
   };
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(null);
+    const onDown = (e: PointerEvent) => !headerRef.current?.contains(e.target as Node) && setOpen(null);
+    window.addEventListener('keydown', onKey);
+    window.addEventListener('pointerdown', onDown);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      window.removeEventListener('pointerdown', onDown);
+    };
+  }, [open]);
 
   const contact = settings?.contact;
   const cta = { label: 'Trao đổi dự án', url: '/lien-he' };
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border/80 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/80">
+    <header ref={headerRef} className="sticky top-0 z-40 border-b border-border/80 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/80">
       <div className="mx-auto flex h-16 max-w-[1280px] items-center justify-between gap-6 px-4 sm:px-6 lg:px-8">
         <Link to="/" className="flex shrink-0 items-center gap-2.5 font-semibold tracking-tight" aria-label={brand?.siteName ?? 'Trang chủ'}>
           {/* Logo (bieu tuong) + ten thuong hieu; chua co logo → o chu NB. */}
@@ -134,6 +170,12 @@ export function SiteHeader({ settings, navigation }: { settings: PublicSettings 
         </nav>
 
         <div className="flex items-center gap-2">
+          {(contact?.hotline ?? contact?.phone) && (
+            <a href={`tel:${(contact?.hotline ?? contact?.phone)!.replace(/\s/g, '')}`}
+              className="mr-1 hidden items-center gap-1.5 text-sm font-semibold text-fg hover:text-primary xl:inline-flex">
+              <Phone className="size-4 text-primary" aria-hidden />{contact?.hotline ?? contact?.phone}
+            </a>
+          )}
           <Link to="/search" aria-label="Tìm kiếm" className="grid size-10 place-items-center rounded-md text-fg-muted hover:bg-bg-subtle hover:text-fg">
             <Search className="size-5" aria-hidden />
           </Link>
