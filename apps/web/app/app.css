@@ -44,3 +44,43 @@
     }
   }
 }
+
+/* Hieu ung xuat hien: chi them class .reveal tren client (JS) → SSR/khong JS van hien day du noi dung. */
+@layer components {
+  .reveal {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  .reveal.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Noi dung rich text tu CMS (bai viet, case study, mo ta san pham). */
+  .prose-nb {
+    font-size: 1.0625rem;
+    line-height: 1.75;
+    color: var(--color-fg);
+  }
+
+  .prose-nb > * + * { margin-top: 1.1em; }
+  .prose-nb h2 { margin-top: 2em; font-size: 1.625rem; line-height: 1.25; font-weight: 600; letter-spacing: -0.02em; }
+  .prose-nb h3 { margin-top: 1.6em; font-size: 1.25rem; line-height: 1.35; font-weight: 600; }
+  .prose-nb h4 { margin-top: 1.4em; font-weight: 600; }
+  .prose-nb a { color: var(--color-primary); text-decoration: underline; text-underline-offset: 3px; }
+  .prose-nb ul { list-style: disc; padding-left: 1.4em; }
+  .prose-nb ol { list-style: decimal; padding-left: 1.4em; }
+  .prose-nb li + li { margin-top: 0.4em; }
+  .prose-nb blockquote { border-left: 3px solid var(--color-primary); padding-left: 1em; color: var(--color-fg-muted); }
+  .prose-nb img { border-radius: 0.75rem; border: 1px solid var(--color-border); height: auto; }
+  .prose-nb code { font-family: var(--font-mono); font-size: 0.9em; background: var(--color-bg-subtle); padding: 0.15em 0.35em; border-radius: 4px; }
+  .prose-nb pre { overflow-x: auto; background: var(--color-dark); color: #e6e8ee; padding: 1em 1.2em; border-radius: 0.75rem; font-size: 0.875rem; }
+  .prose-nb pre code { background: none; padding: 0; }
+  .prose-nb table { width: 100%; border-collapse: collapse; font-size: 0.95em; }
+  .prose-nb th, .prose-nb td { border: 1px solid var(--color-border); padding: 0.5em 0.75em; text-align: left; }
+  .prose-nb hr { border-color: var(--color-border); }
+
+  .tone-dark .prose-nb { color: rgb(255 255 255 / 0.85); }
+}
