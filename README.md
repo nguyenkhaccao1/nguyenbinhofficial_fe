@@ -65,3 +65,17 @@ npm test
 Đang dùng React 19, React Router 7.18, Vite 7, TypeScript 5.9, TanStack Table 8, Vitest 5. Các bản major mới hơn (React Router 8, Vite 8, TypeScript 7, TanStack Table 9) đã phát hành; nâng cấp nên làm thành một thay đổi riêng có kiểm thử.
 
 > npm 11.3 có lỗi arborist (`Cannot read properties of null (reading 'edgesOut')`) với vitest 4.x — repo dùng vitest 5 để tránh lỗi này.
+
+## Cập nhật & triển khai
+
+Web và admin được build và deploy cùng backend. Sau khi commit, chạy từ repo backend (Git Bash):
+
+```bash
+cd ../nguyenbinhofficial_be
+deploy/release.sh          # test → push 2 repo lên GitHub → SSH vào server pull + build + chạy lại
+```
+
+Hoặc làm tay: `git push origin main` ở repo này, rồi
+`ssh -i ~/.ssh/vietnix_ed25519 root@103.200.22.167 "cd ~/apps/nguyenbinhofficial_be && bash deploy/deploy.sh --pull"`.
+
+Hướng dẫn đầy đủ (log, rollback, lưu ý): README của repo backend, mục **Cập nhật & triển khai**.
