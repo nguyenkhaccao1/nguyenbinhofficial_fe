@@ -18,6 +18,17 @@ function absolute(url: string | null | undefined, siteUrl: string) {
 }
 
 /**
+ * Anh chia se chuan 1200x630: anh tren ImageKit duoc CDN cat san (giu phan dau trang — anh chup man hinh).
+ * Anh khac giu nguyen (kich thuoc khong biet truoc).
+ */
+function shareImage(url: string): { url: string; size: { width: number; height: number } | null } {
+  if (url.includes('ik.imagekit.io/') && !url.includes('?')) {
+    return { url: `${url}?tr=w-1200,h-630,fo-top`, size: { width: 1200, height: 630 } };
+  }
+  return { url, size: null };
+}
+
+/**
  * Meta day du cho 1 trang (muc 27–28): title theo mau, description, canonical, robots, OpenGraph, Twitter Card.
  * Uu tien SEO nhap trong CMS → du lieu noi dung → SEO mac dinh trong Settings.
  */
@@ -60,8 +71,20 @@ export function buildMeta(options: {
     meta.push({ name: 'description', content: description });
     meta.push({ property: 'og:description', content: seo?.ogDescription ?? description });
   }
-  if (image) meta.push({ property: 'og:image', content: image });
-  if (seo?.twitterImage ?? image) meta.push({ name: 'twitter:image', content: absolute(seo?.twitterImage, siteUrl) ?? image! });
+  if (image) {
+    const share = shareImage(image);
+    meta.push({ property: 'og:image', content: share.url });
+    meta.push({ property: 'og:image:alt', content: seo?.ogTitle ?? title });
+    // Kich thuoc biet truoc → Zalo/Facebook hien the anh lon ngay lan chia se dau tien.
+    const fallback = settings?.seo.defaultOgImage;
+    const size = share.size ?? (fallback?.width && fallback?.height && image === absolute(fallback.url, siteUrl)
+      ? { width: fallback.width, height: fallback.height } : null);
+    if (size) {
+      meta.push({ property: 'og:image:width', content: String(size.width) });
+      meta.push({ property: 'og:image:height', content: String(size.height) });
+    }
+  }
+  if (seo?.twitterImage ?? image) meta.push({ name: 'twitter:image', content: absolute(seo?.twitterImage, siteUrl) ?? shareImage(image!).url });
   if (settings?.seo.twitterHandle) meta.push({ name: 'twitter:site', content: settings.seo.twitterHandle });
   if (robots) meta.push({ name: 'robots', content: robots });
   return meta;

@@ -93,14 +93,14 @@ export function SiteHeader({ settings, navigation }: { settings: PublicSettings 
     <header className="sticky top-0 z-40 border-b border-border/80 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/80">
       <div className="mx-auto flex h-16 max-w-[1280px] items-center justify-between gap-6 px-4 sm:px-6 lg:px-8">
         <Link to="/" className="flex shrink-0 items-center gap-2.5 font-semibold tracking-tight" aria-label={brand?.siteName ?? 'Trang chủ'}>
-          {brand?.logo?.url ? (
-            <img src={brand.logo.url} alt={brand.siteName} className="h-8 w-auto" width={brand.logo.width ?? undefined} height={brand.logo.height ?? undefined} />
-          ) : (
-            <>
-              <span className="grid size-8 place-items-center rounded-md bg-dark text-xs font-bold text-white">NB</span>
-              <span>{brand?.siteName ?? 'Nguyên Bình'}</span>
-            </>
-          )}
+          {/* Logo (bieu tuong) + ten thuong hieu; chua co logo → o chu NB. */}
+          {brand?.logo?.url
+            ? <img src={brand.logo.url} alt="" className="h-10 w-auto" width={brand.logo.width ?? undefined} height={brand.logo.height ?? undefined} />
+            : <span className="grid size-8 place-items-center rounded-md bg-dark text-xs font-bold text-white">NB</span>}
+          <span className="leading-tight">
+            <span className="block">{brand?.shortName ?? 'Nguyên Bình'}</span>
+            <span className="block text-[11px] font-medium tracking-[0.14em] text-accent uppercase">Technology</span>
+          </span>
         </Link>
 
         <nav aria-label="Menu chính" className="hidden lg:block">

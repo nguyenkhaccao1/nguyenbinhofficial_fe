@@ -139,7 +139,12 @@ export function ProductCardView({ product }: { product: ProductCard }) {
 export function ServiceCardView({ service }: { service: ServiceCard }) {
   return (
     <Link to={`/dich-vu/${service.slug}`} prefetch="intent"
-      className="group flex h-full flex-col gap-4 rounded-xl border border-border bg-white p-6 transition-colors hover:border-primary/40 [.tone-dark_&]:border-white/10 [.tone-dark_&]:bg-dark-elevated [.tone-dark_&]:hover:border-white/25">
+      className="group flex h-full flex-col gap-4 overflow-hidden rounded-xl border border-border bg-white p-6 transition-colors hover:border-primary/40 [.tone-dark_&]:border-white/10 [.tone-dark_&]:bg-dark-elevated [.tone-dark_&]:hover:border-white/25">
+      {service.cover && (
+        <div className="-mx-6 -mt-6 mb-1 aspect-[16/9] overflow-hidden border-b border-border bg-bg-subtle [.tone-dark_&]:border-white/10">
+          <Picture image={service.cover} alt={service.name} sizes="(min-width: 1024px) 33vw, 100vw" imgClassName="size-full object-cover transition-transform duration-500 group-hover:scale-[1.02]" />
+        </div>
+      )}
       <span className="grid size-11 place-items-center rounded-lg bg-primary/8 text-primary [.tone-dark_&]:bg-white/8 [.tone-dark_&]:text-accent">
         <Icon name={service.icon} className="size-5" />
       </span>

@@ -1,8 +1,8 @@
 import { FaqList, ProcessSteps, TechGroups } from '~/components/blocks';
 import { CardGrid, ProjectCardView, ServiceCardView } from '~/components/cards';
 import { Icon } from '~/components/Icon';
-import { PageHeader } from '~/components/PageHeader';
-import { ButtonLink, RichText, Section, SectionHeading } from '~/components/ui';
+import { Breadcrumbs } from '~/components/PageHeader';
+import { ButtonLink, Container, cx, Eyebrow, Picture, RichText, Section, SectionHeading } from '~/components/ui';
 import { cacheHeaders, getService, orNotFound } from '~/lib/api.server';
 import { breadcrumbLd, buildMeta, customSchema, jsonLd, rootData } from '~/lib/seo';
 import type { TechnologyGroupDto } from '@nb/shared';
@@ -44,17 +44,30 @@ export default function Service({ loaderData }: Route.ComponentProps) {
 
   return (
     <>
-      <PageHeader dark crumbs={[{ name: 'Trang chủ', path: '/' }, { name: 'Dịch vụ', path: '/dich-vu' }, { name: s.card.name, path: `/dich-vu/${s.card.slug}` }]}
-        eyebrow={s.card.categoryName} title={s.card.name} subtitle={s.card.shortDescription}>
-        <div className="mt-9 flex flex-wrap gap-3">
-          <ButtonLink to="/lien-he" variant="light" size="lg" arrow>Trao đổi yêu cầu</ButtonLink>
-        </div>
-      </PageHeader>
+      <div className="bg-dark text-white tone-dark">
+        <Container className="pt-10 pb-16 sm:pt-12 lg:pb-20">
+          <Breadcrumbs items={[{ name: 'Trang chủ', path: '/' }, { name: 'Dịch vụ', path: '/dich-vu' }, { name: s.card.name, path: `/dich-vu/${s.card.slug}` }]} />
+          <div className={cx('mt-10 grid items-center gap-12', s.card.cover && 'lg:grid-cols-[6fr_6fr]')}>
+            <div>
+              {s.card.categoryName && <Eyebrow>{s.card.categoryName}</Eyebrow>}
+              <h1 className="mt-4 text-4xl leading-[1.1] font-semibold tracking-tight text-balance sm:text-5xl">{s.card.name}</h1>
+              {s.card.shortDescription && <p className="mt-5 text-lg leading-relaxed text-white/70 sm:text-xl">{s.card.shortDescription}</p>}
+              <div className="mt-9 flex flex-wrap gap-3">
+                <ButtonLink to="/lien-he" variant="light" size="lg" arrow>Trao đổi yêu cầu</ButtonLink>
+              </div>
+            </div>
+            {s.card.cover && (
+              <Picture image={s.card.cover} alt={s.card.name} sizes="(min-width: 1024px) 50vw, 100vw" priority
+                imgClassName="w-full rounded-xl border border-white/10 bg-white object-cover" />
+            )}
+          </div>
+        </Container>
+      </div>
 
       {(s.description || s.deliverables) && (
         <Section>
           <div className="grid gap-12 lg:grid-cols-[7fr_5fr] lg:gap-16">
-            <RichText html={s.description} />
+            <RichText html={s.description} className="min-w-0" />
             {s.deliverables && (
               <aside className="rounded-xl border border-border bg-bg-subtle p-6 lg:self-start">
                 <h2 className="text-lg font-semibold">Bạn nhận được</h2>

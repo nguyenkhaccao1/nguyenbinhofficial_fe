@@ -26,7 +26,13 @@ export function useSiteSettings() {
   return useRouteLoaderData<typeof loader>('root')?.settings ?? null;
 }
 
-export const links: Route.LinksFunction = () => [];
+// Bo icon tinh (apps/web/public) — luon co, ke ca khi API loi; favicon trong Settings (neu co) duoc uu tien o <head>.
+export const links: Route.LinksFunction = () => [
+  { rel: 'icon', href: '/favicon.ico', sizes: '48x48' },
+  { rel: 'icon', href: '/icon-192.png', type: 'image/png', sizes: '192x192' },
+  { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
+  { rel: 'manifest', href: '/site.webmanifest' },
+];
 
 function themeStyle(settings: PublicSettings | null): CSSProperties | undefined {
   if (!settings) return undefined;
@@ -50,7 +56,8 @@ export function Layout({ children }: { children: ReactNode }) {
         {!root?.indexable && <meta name="robots" content="noindex, nofollow" />}
         {tracking?.googleSiteVerification && <meta name="google-site-verification" content={tracking.googleSiteVerification} />}
         {tracking?.bingSiteVerification && <meta name="msvalidate.01" content={tracking.bingSiteVerification} />}
-        {settings?.brand.favicon?.url && <link rel="icon" href={settings.brand.favicon.url} />}
+        {settings?.brand.favicon?.url && <link rel="icon" type="image/png" href={settings.brand.favicon.url} />}
+        <meta name="theme-color" content={settings?.theme.darkColor ?? '#0B110D'} />
         <Meta />
         <Links />
       </head>

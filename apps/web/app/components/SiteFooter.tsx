@@ -43,6 +43,10 @@ export function SiteFooter({ settings, navigation }: { settings: PublicSettings 
     <footer className="bg-dark text-white/65">
       <div className="mx-auto grid max-w-[1280px] gap-12 px-4 py-16 sm:px-6 lg:grid-cols-[1.4fr_3fr] lg:px-8 lg:py-20">
         <div>
+          {brand?.logoDark?.url && (
+            <img src={brand.logoDark.url} alt={brand.siteName} className="mb-5 h-20 w-auto" loading="lazy"
+              width={brand.logoDark.width ?? undefined} height={brand.logoDark.height ?? undefined} />
+          )}
           <p className="text-lg font-semibold text-white">{brand?.siteName ?? 'Nguyên Bình'}</p>
           {brand?.tagline && <p className="mt-3 max-w-sm leading-relaxed">{brand.tagline}</p>}
           {contact && (contact.phone || contact.email || contact.address) && (
