@@ -13,6 +13,7 @@ import {
   useRouteLoaderData,
 } from 'react-router';
 import type { PublicSettings } from '@nb/shared';
+import { motionBootScript } from '~/components/motion';
 import { getSiteSettings, SITE_INDEXABLE } from '~/lib/api.server';
 import type { Route } from './+types/root';
 
@@ -49,9 +50,11 @@ export function Layout({ children }: { children: ReactNode }) {
   const tracking = settings?.tracking;
 
   return (
-    <html lang="vi" style={themeStyle(settings)}>
+    // suppressHydrationWarning: script dau trang them class "motion" vao <html> truoc khi React hydrate.
+    <html lang="vi" style={themeStyle(settings)} suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
+        <script dangerouslySetInnerHTML={{ __html: motionBootScript }} />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         {!root?.indexable && <meta name="robots" content="noindex, nofollow" />}
         {tracking?.googleSiteVerification && <meta name="google-site-verification" content={tracking.googleSiteVerification} />}

@@ -45,19 +45,19 @@
   }
 }
 
-/* Hieu ung xuat hien: chi them class .reveal tren client (JS) → SSR/khong JS van hien day du noi dung. */
+/* Hieu ung GSAP (components/motion.tsx). Chi an tam khi <html class="motion"> — class do script dau trang gan
+   (khong gan khi prefers-reduced-motion, tu go sau 2.5s neu GSAP khong chay) → khong bao gio mat noi dung. */
+.motion [data-anim='hero-title'],
+.motion [data-anim='hero-item'],
+.motion [data-anim='hero-shot'],
+.motion [data-anim='heading'],
+.motion [data-anim='cta'],
+.motion [data-anim='cards'] > *,
+.motion [data-anim='steps'] li > * {
+  visibility: hidden;
+}
+
 @layer components {
-  .reveal {
-    opacity: 0;
-    transform: translateY(16px);
-    transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
-  }
-
-  .reveal.is-visible {
-    opacity: 1;
-    transform: none;
-  }
-
   /* Noi dung rich text tu CMS (bai viet, case study, mo ta san pham). */
   .prose-nb {
     font-size: 1.0625rem;
@@ -89,4 +89,18 @@
   .prose-nb figure { margin: 2em 0; }
   .prose-nb figure img { width: 100%; background: #fff; }
   .prose-nb figcaption { margin-top: 0.6em; font-size: 0.875rem; color: var(--color-fg-muted); text-align: center; }
+}
+
+@layer components {
+  /* Dong tach boi SplitText (mask): chua them phan duoi chu (g, y, dau tieng Viet). */
+  .split-line { padding-bottom: 0.1em; margin-bottom: -0.1em; }
+
+  /* Dai cong nghe chay ngang: mo dan hai dau. */
+  .marquee { mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee { mask-image: none; }
+    [data-marquee] { width: auto; flex-wrap: wrap; justify-content: center; row-gap: 1rem; }
+    [data-marquee] > [aria-hidden] { display: none; }
+  }
 }

@@ -11,7 +11,7 @@ import {
 } from './cards';
 import { Icon } from './Icon';
 import {
-  BrowserFrame, ButtonLink, cx, Eyebrow, Picture, PhoneFrame, Reveal, RichText, Section, SectionHeading, type Tone,
+  BrowserFrame, ButtonLink, cx, Eyebrow, Picture, PhoneFrame, RichText, Section, SectionHeading, type Tone,
 } from './ui';
 
 type Json = Record<string, unknown>;
@@ -48,7 +48,9 @@ export function PageRenderer({ page }: { page: PublicPage }) {
             {blocks.map((block, bIndex) => {
               const first = !firstUsed;
               firstUsed = true;
-              return <BlockView key={bIndex} block={block} ctx={{ media: page.media, first, align: (section.settings.align as 'left' | 'center') ?? 'left' }} />;
+              const animate = section.settings.animation === 'fade-up';
+              return <BlockView key={bIndex} block={block} sectionAnimate={animate}
+                ctx={{ media: page.media, first, align: (section.settings.align as 'left' | 'center') ?? 'left' }} />;
             })}
           </SectionView>
         );
@@ -64,7 +66,7 @@ function SectionView({ section, children }: { section: PublicSection; children: 
   return (
     <Section tone={(str(s.tone) as Tone) ?? 'light'} width={str(s.width)} padding={str(s.padding)} id={str(s.anchorId)}
       className={cx(hidden, str(s.customClass), s.align === 'center' && 'text-center')}>
-      {s.animation === 'fade-up' ? <Reveal>{content}</Reveal> : content}
+      {content}
     </Section>
   );
 }
@@ -76,13 +78,18 @@ function isEmptyBlock(block: PublicBlock) {
   return false;
 }
 
-function BlockView({ block, ctx }: { block: PublicBlock; ctx: BlockContext }) {
+/** Khoi da co hieu ung GSAP rieng (hero, the, so lieu, quy trinh, CTA...) — khong boc fade chung. */
+const selfAnimated = new Set(['HERO', 'HEADING', 'STATS', 'FEATURE_GRID', 'PROJECTS', 'PRODUCTS', 'SERVICES', 'INDUSTRIES', 'TECH_STACK',
+  'TESTIMONIALS', 'TEAM', 'TIMELINE', 'CTA', 'BLOG', 'PRICING', 'GALLERY', 'SPACER', 'DIVIDER']);
+
+function BlockView({ block, ctx, sectionAnimate }: { block: PublicBlock; ctx: BlockContext; sectionAnimate?: boolean }) {
   const settings = block.settings as Json;
   const Renderer = renderers[block.type];
   if (!Renderer) return null;
   const node = <Renderer data={block.data as Json} resolved={block.resolved} ctx={ctx} />;
   const className = cx(settings.hideOnMobile === true && 'max-sm:hidden', str(settings.customClass));
-  if (settings.animation === 'fade-up') return <Reveal className={className}>{node}</Reveal>;
+  const fade = (settings.animation === 'fade-up' || sectionAnimate) && !selfAnimated.has(block.type);
+  if (fade) return <div className={className || undefined} data-anim="heading">{node}</div>;
   return className ? <div className={className}>{node}</div> : node;
 }
 
@@ -112,15 +119,15 @@ const Hero: Renderer = ({ data, resolved, ctx }) => {
   return (
     <div className={cx('grid items-center gap-12', images.length > 0 && 'lg:grid-cols-[6fr_6fr] lg:gap-16')}>
       <div className={cx(images.length === 0 && 'mx-auto max-w-4xl text-center')}>
-        {str(data.eyebrow) && <Eyebrow className="mb-5">{str(data.eyebrow)}</Eyebrow>}
+        {str(data.eyebrow) && <Eyebrow className="mb-5" data-anim="hero-item">{str(data.eyebrow)}</Eyebrow>}
         {str(data.title) && (
-          <Title className="text-4xl leading-[1.08] font-semibold tracking-tight text-balance whitespace-pre-line sm:text-5xl lg:text-[3.5rem]">
+          <Title data-anim="hero-title" className="text-4xl leading-[1.08] font-semibold tracking-tight text-balance whitespace-pre-line sm:text-5xl lg:text-[3.5rem]">
             {str(data.title)}
           </Title>
         )}
-        {str(data.subtitle) && <p className="mt-6 text-lg leading-8 whitespace-pre-line text-fg-muted sm:text-xl [.tone-dark_&]:text-white/70">{str(data.subtitle)}</p>}
+        {str(data.subtitle) && <p data-anim="hero-item" className="mt-6 text-lg leading-8 whitespace-pre-line text-fg-muted sm:text-xl [.tone-dark_&]:text-white/70">{str(data.subtitle)}</p>}
         {(hasCta(primary) || hasCta(secondary)) && (
-          <div className={cx('mt-9 flex flex-wrap gap-3', images.length === 0 && 'justify-center')}>
+          <div data-anim="hero-item" className={cx('mt-9 flex flex-wrap gap-3', images.length === 0 && 'justify-center')}>
             {hasCta(primary) && <ButtonLink to={primary.url} size="lg" arrow>{primary.label}</ButtonLink>}
             {hasCta(secondary) && <ButtonLink to={secondary.url} size="lg" variant="secondary">{secondary.label}</ButtonLink>}
           </div>
@@ -135,12 +142,15 @@ const Hero: Renderer = ({ data, resolved, ctx }) => {
 function HeroMontage({ images, priority }: { images: PublicImage[]; priority: boolean }) {
   const [main, ...rest] = images;
   return (
-    <div className="relative pb-10 lg:pb-14">
-      <BrowserFrame>
-        <Picture image={main} sizes="(min-width: 1024px) 50vw, 100vw" priority={priority} imgClassName="w-full" />
-      </BrowserFrame>
+    <div className="relative pb-10 [perspective:1200px] lg:pb-14" data-anim="hero-montage">
+      {/* Anh chinh la LCP → chi chuyen dong, khong an truoc (hero-main); anh phu hien dan (hero-shot). */}
+      <div data-anim="hero-main">
+        <BrowserFrame>
+          <Picture image={main} sizes="(min-width: 1024px) 50vw, 100vw" priority={priority} imgClassName="w-full" />
+        </BrowserFrame>
+      </div>
       {rest.slice(0, 2).map((img, i) => (
-        <div key={img.id} className={cx('absolute bottom-0 hidden w-[42%] sm:block', i === 0 ? '-left-6' : '-right-4 bottom-8 w-[34%]')}>
+        <div key={img.id} data-anim="hero-shot" className={cx('absolute bottom-0 hidden w-[42%] sm:block', i === 0 ? '-left-6' : '-right-4 bottom-8 w-[34%]')}>
           <BrowserFrame>
             <Picture image={img} sizes="25vw" imgClassName="w-full" />
           </BrowserFrame>
@@ -153,7 +163,7 @@ function HeroMontage({ images, priority }: { images: PublicImage[]; priority: bo
 const HeadingBlock: Renderer = ({ data, ctx }) => {
   const Tag = ctx.first ? 'h1' : ((str(data.level) as 'h2' | 'h3') ?? 'h2');
   return (
-    <div className={cx('max-w-3xl', ctx.align === 'center' && 'mx-auto')}>
+    <div data-anim="heading" className={cx('max-w-3xl', ctx.align === 'center' && 'mx-auto')}>
       {str(data.eyebrow) && <Eyebrow className="mb-3">{str(data.eyebrow)}</Eyebrow>}
       {str(data.title) && (
         <Tag className={cx('font-semibold tracking-tight text-balance', Tag === 'h3' ? 'text-2xl' : 'text-3xl leading-tight sm:text-4xl lg:text-[2.75rem]')}>
@@ -185,7 +195,7 @@ const CtaBlock: Renderer = ({ data, ctx }) => {
   const ctas = [data.primaryCta, data.secondaryCta, data.tertiaryCta].map((c) => c as Cta).filter(hasCta);
   const Title = ctx.first ? 'h1' : 'h2';
   return (
-    <div className="rounded-2xl bg-dark px-6 py-14 text-center text-white tone-dark sm:px-12 sm:py-20 [.tone-dark_&]:bg-white/[0.04] [.tone-dark_&]:ring-1 [.tone-dark_&]:ring-white/10">
+    <div data-anim="cta" className="rounded-2xl bg-dark px-6 py-14 text-center text-white tone-dark sm:px-12 sm:py-20 [.tone-dark_&]:bg-white/[0.04] [.tone-dark_&]:ring-1 [.tone-dark_&]:ring-white/10">
       {str(data.title) && <Title className="mx-auto max-w-3xl text-3xl font-semibold tracking-tight text-balance sm:text-4xl">{str(data.title)}</Title>}
       {str(data.subtitle) && <p className="mx-auto mt-4 max-w-2xl text-lg leading-relaxed text-white/70">{str(data.subtitle)}</p>}
       {ctas.length > 0 && (
@@ -280,11 +290,11 @@ const Stats: Renderer = ({ data, ctx }) => {
   return (
     <div>
       {str(data.title) && <Heading data={{ title: data.title }} ctx={ctx} />}
-      <dl className={cx('grid gap-px overflow-hidden rounded-xl border border-border bg-border [.tone-dark_&]:border-white/10 [.tone-dark_&]:bg-white/10',
+      <dl data-anim="heading" className={cx('grid gap-px overflow-hidden rounded-xl border border-border bg-border [.tone-dark_&]:border-white/10 [.tone-dark_&]:bg-white/10',
         items.length >= 4 ? 'grid-cols-2 lg:grid-cols-4' : items.length === 3 ? 'sm:grid-cols-3' : 'sm:grid-cols-2')}>
         {items.map((s, i) => (
           <div key={i} className="bg-bg p-6 sm:p-8 [.tone-dark_&]:bg-dark">
-            <dd className="text-3xl font-semibold tracking-tight sm:text-4xl">{s.value}</dd>
+            <dd data-anim="count" className="text-3xl font-semibold tracking-tight tabular-nums sm:text-4xl">{s.value}</dd>
             <dt className="mt-2 font-medium">{s.label}</dt>
             {str(s.description) && <p className="mt-1 text-sm text-fg-muted [.tone-dark_&]:text-white/55">{s.description}</p>}
           </div>
@@ -334,6 +344,9 @@ const Timeline: Renderer = ({ data, ctx }) => {
 
 export function ProcessSteps({ steps }: { steps: { title: string; description: string | null; output: string | null }[] }) {
   return (
+    <div data-anim="steps" className="relative">
+      {/* Duong tien do chay theo cuon (motion.tsx); khong JS → hien day du. */}
+      <div data-anim="steps-line" aria-hidden className="absolute inset-x-0 -top-3 h-0.5 rounded-full bg-primary [.tone-dark_&]:bg-accent" />
     <ol className="grid gap-px overflow-hidden rounded-xl border border-border bg-border text-left sm:grid-cols-2 lg:grid-cols-3 [.tone-dark_&]:border-white/10 [.tone-dark_&]:bg-white/10">
       {steps.map((s, i) => (
         <li key={i} className="bg-bg p-6 [.tone-dark_&]:bg-dark">
@@ -348,6 +361,7 @@ export function ProcessSteps({ steps }: { steps: { title: string; description: s
         </li>
       ))}
     </ol>
+    </div>
   );
 }
 
@@ -474,17 +488,22 @@ export function TechGroups({ groups }: { groups: TechnologyGroupDto[] }) {
 const TechStack: Renderer = ({ data, resolved, ctx }) => {
   const groups = list<TechnologyGroupDto>(resolved);
   const capabilities = list<string>(data.capabilities).filter(Boolean);
+  const strip = groups.flatMap((g) => g.items);
   return (
     <div>
       <Heading data={{ title: data.title }} ctx={ctx} />
       {data.layout === 'strip' ? (
-        <ul className="flex flex-wrap justify-center gap-x-8 gap-y-4">
-          {groups.flatMap((g) => g.items).map((t) => (
-            <li key={t.slug} className="flex items-center gap-2 font-medium text-fg-muted [.tone-dark_&]:text-white/70">
-              {t.logo && <Picture image={t.logo} alt="" sizes="24px" imgClassName="size-6 object-contain" />}{t.name}
-            </li>
-          ))}
-        </ul>
+        // Dai chay ngang vo tan: danh sach nhan doi (ban 2 aria-hidden) de vong lap lien mach; giam chuyen dong → dung yen, xuong dong.
+        <div className="marquee overflow-hidden">
+          <ul data-marquee className="flex w-max items-center">
+            {[...strip, ...strip].map((t, i) => (
+              <li key={`${t.slug}-${i}`} aria-hidden={i >= strip.length || undefined}
+                className="flex shrink-0 items-center gap-2 pr-10 font-medium whitespace-nowrap text-fg-muted [.tone-dark_&]:text-white/70">
+                {t.logo && <Picture image={t.logo} alt="" sizes="24px" imgClassName="size-6 object-contain" />}{t.name}
+              </li>
+            ))}
+          </ul>
+        </div>
       ) : <TechGroups groups={groups} />}
       {capabilities.length > 0 && (
         <p className="mt-8 flex flex-wrap gap-x-6 gap-y-2 font-mono text-sm text-fg-muted [.tone-dark_&]:text-white/55">

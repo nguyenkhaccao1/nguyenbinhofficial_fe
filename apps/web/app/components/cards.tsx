@@ -31,7 +31,7 @@ export function ProjectCardView({ project, priority }: { project: ProjectCard; p
       className="group flex h-full flex-col overflow-hidden rounded-xl border border-border bg-white transition-shadow hover:shadow-[0_16px_40px_-20px_rgba(10,13,20,0.3)] [.tone-dark_&]:border-white/10 [.tone-dark_&]:bg-dark-elevated">
       <div className="aspect-[16/10] overflow-hidden border-b border-border bg-bg-subtle [.tone-dark_&]:border-white/10">
         {project.image
-          ? <Picture image={project.image} alt={project.name} sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" priority={priority}
+          ? <Picture image={project.image} alt={project.name} sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" priority={priority} parallax
             imgClassName="size-full object-cover object-top transition-transform duration-500 group-hover:scale-[1.02]" />
           : <ImagePlaceholder label={project.name} className="size-full" />}
       </div>
@@ -198,5 +198,6 @@ export function CardGrid({ children, columns = 3, className }: { children: React
     3: 'sm:grid-cols-2 lg:grid-cols-3',
     4: 'sm:grid-cols-2 lg:grid-cols-4',
   };
-  return <div className={cx('grid gap-6', cols[String(columns)] ?? cols[3], className)}>{children}</div>;
+  // data-anim="cards": moi the hien theo nhom khi cuon toi (motion.tsx).
+  return <div data-anim="cards" className={cx('grid gap-6', cols[String(columns)] ?? cols[3], className)}>{children}</div>;
 }

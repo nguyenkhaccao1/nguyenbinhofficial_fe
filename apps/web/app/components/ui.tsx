@@ -1,5 +1,5 @@
 import { ArrowRight } from 'lucide-react';
-import { useEffect, useRef, type CSSProperties, type ElementType, type ReactNode } from 'react';
+import { type ComponentProps, type CSSProperties, type ElementType, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import type { PublicImage } from '@nb/shared';
 
@@ -42,8 +42,8 @@ export function Section({ tone = 'light', padding = 'lg', width = 'content', id,
   );
 }
 
-export function Eyebrow({ children, className }: { children: ReactNode; className?: string }) {
-  return <p className={cx('text-[13px] font-semibold tracking-[0.08em] text-primary uppercase [.tone-dark_&]:text-accent', className)}>{children}</p>;
+export function Eyebrow({ children, className, ...rest }: ComponentProps<'p'>) {
+  return <p {...rest} className={cx('text-[13px] font-semibold tracking-[0.08em] text-primary uppercase [.tone-dark_&]:text-accent', className)}>{children}</p>;
 }
 
 export function SectionHeading({ eyebrow, title, subtitle, align = 'left', as: Tag = 'h2', action }: {
@@ -51,7 +51,7 @@ export function SectionHeading({ eyebrow, title, subtitle, align = 'left', as: T
 }) {
   if (!eyebrow && !title && !subtitle) return null;
   return (
-    <div className={cx('mb-10 flex flex-wrap items-end justify-between gap-6 sm:mb-14', align === 'center' && 'flex-col items-center text-center')}>
+    <div data-anim="heading" className={cx('mb-10 flex flex-wrap items-end justify-between gap-6 sm:mb-14', align === 'center' && 'flex-col items-center text-center')}>
       <div className={cx('max-w-3xl', align === 'center' && 'mx-auto')}>
         {eyebrow && <Eyebrow className="mb-3">{eyebrow}</Eyebrow>}
         {title && <Tag className="text-3xl leading-tight font-semibold tracking-tight text-balance sm:text-4xl lg:text-[2.75rem]">{title}</Tag>}
@@ -95,16 +95,18 @@ export function TechChip({ children }: { children: ReactNode }) {
  * Anh responsive: AVIF → WebP → anh goc. Kich thuoc co dinh (tranh CLS), lazy mac dinh;
  * priority=true cho anh LCP (hero).
  */
-export function Picture({ image, alt, sizes = '(min-width: 1024px) 50vw, 100vw', className, imgClassName, priority, style }: {
+export function Picture({ image, alt, sizes = '(min-width: 1024px) 50vw, 100vw', className, imgClassName, priority, style, parallax }: {
   image: PublicImage | null | undefined; alt?: string; sizes?: string; className?: string; imgClassName?: string; priority?: boolean;
   style?: CSSProperties;
+  /** Anh troi nhe khi cuon (GSAP, xem motion.tsx) — dung trong khung overflow-hidden. */
+  parallax?: boolean;
 }) {
   if (!image) return null;
   const avif = image.sources.filter((s) => s.format === 'avif');
   const webp = image.sources.filter((s) => s.format === 'webp');
   const srcSet = (list: typeof avif) => list.map((s) => `${s.url} ${s.width}w`).join(', ');
   return (
-    <picture className={className}>
+    <picture className={parallax ? cx('block size-full', className) : className} data-parallax={parallax || undefined}>
       {avif.length > 0 && <source type="image/avif" srcSet={srcSet(avif)} sizes={sizes} />}
       {webp.length > 0 && <source type="image/webp" srcSet={srcSet(webp)} sizes={sizes} />}
       <img src={image.url} alt={alt ?? image.alt ?? ''} width={image.width ?? undefined} height={image.height ?? undefined}
@@ -149,27 +151,4 @@ export function ImagePlaceholder({ label, className }: { label: string; classNam
 export function RichText({ html, className }: { html: string | null | undefined; className?: string }) {
   if (!html) return null;
   return <div className={cx('prose-nb', className)} dangerouslySetInnerHTML={{ __html: html }} />;
-}
-
-/** Hieu ung xuat hien nhe khi cuon toi (tat khi prefers-reduced-motion; SSR van hien day du noi dung). */
-export function Reveal({ children, className, as: Tag = 'div', delay = 0 }: {
-  children: ReactNode; className?: string; as?: ElementType; delay?: number;
-}) {
-  const ref = useRef<HTMLElement>(null);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el || !('IntersectionObserver' in window)) return;
-    el.classList.add('reveal');
-    const observer = new IntersectionObserver((entries) => {
-      for (const entry of entries) {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('is-visible');
-          observer.unobserve(entry.target);
-        }
-      }
-    }, { rootMargin: '0px 0px -8% 0px' });
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-  return <Tag ref={ref} className={className} style={delay ? { transitionDelay: `${delay}ms` } : undefined}>{children}</Tag>;
 }
