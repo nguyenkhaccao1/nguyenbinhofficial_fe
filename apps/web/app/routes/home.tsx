@@ -25,8 +25,12 @@ export const meta: Route.MetaFunction = ({ loaderData, matches }) => {
     jsonLd({
       '@context': 'https://schema.org',
       '@type': 'Organization',
-      name: settings?.brand.legalName ?? settings?.brand.siteName,
-      alternateName: settings?.brand.siteName,
+      name: settings?.brand.siteName,
+      ...(settings?.brand.legalName ? { legalName: settings.brand.legalName } : {}),
+      ...(settings?.contact.taxCode ? { taxID: settings.contact.taxCode } : {}),
+      ...(settings?.contact.address
+        ? { address: { '@type': 'PostalAddress', streetAddress: settings.contact.address, addressLocality: 'Hà Nội', addressCountry: 'VN' } }
+        : {}),
       url: `${siteUrl}/`,
       ...(settings?.brand.logo?.url ? { logo: settings.brand.logo.url } : {}),
       ...(settings?.contact.email ? { email: settings.contact.email } : {}),
